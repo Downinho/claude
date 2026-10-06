@@ -1,0 +1,9 @@
+{
+  "name": "downway-demos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node generator/build.mjs",
+    "build:one": "node generator/build.mjs --only"
+  }
+}

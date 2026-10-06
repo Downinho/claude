@@ -1,0 +1,37 @@
+{
+  "_comentario": "EXEMPLO FICTÍCIO. Copie esta pasta para prospects/<slug-da-empresa>/ e troque tudo pelos dados reais do Instagram dela.",
+  "status": "exemplo",
+  "slug": "exemplo-barbearia",
+  "nome": "Barbearia Navalha",
+  "nicho": "barbearia",
+  "cidade": "Campinas/SP",
+  "instagram": "@barbearianavalha_exemplo",
+  "whatsapp": "5519900000000",
+  "telefone": "(19) 90000-0000",
+  "headline": "Corte de respeito, no seu horário.",
+  "slogan": "Barbearia clássica no coração de Campinas. Agende pelo WhatsApp em 30 segundos.",
+  "sobre": [
+    "Desde 2018 cuidando do visual de quem não abre mão de estilo.",
+    "Ambiente climatizado, cerveja gelada e barbeiros que entendem do assunto."
+  ],
+  "cores": { "primaria": "#111111", "secundaria": "#c8a24a", "fundo": "#faf8f4", "texto": "#1b1b1b" },
+  "fonteTitulo": "Playfair Display",
+  "logo": "assets/logo.svg",
+  "hero": "assets/hero.svg",
+  "fotoSobre": "assets/foto2.svg",
+  "galeria": ["assets/foto1.svg", "assets/foto2.svg", "assets/foto3.svg", "assets/foto4.svg", "assets/foto5.svg", "assets/foto6.svg"],
+  "servicos": [
+    { "nome": "Corte", "descricao": "Tesoura ou máquina, com lavagem.", "preco": "R$ 45" },
+    { "nome": "Barba", "descricao": "Toalha quente e navalha.", "preco": "R$ 35" },
+    { "nome": "Corte + Barba", "descricao": "O combo completo.", "preco": "R$ 70" }
+  ],
+  "depoimentos": [
+    { "nome": "Cliente (exemplo)", "texto": "Use aqui comentários reais do Instagram ou avaliações do Google, com o nome como aparece lá." }
+  ],
+  "endereco": "Rua Exemplo, 123 — Centro, Campinas/SP",
+  "horarios": [
+    { "dias": "Ter a Sex", "horas": "9h às 20h" },
+    { "dias": "Sábado", "horas": "8h às 17h" }
+  ],
+  "proposta": { "preco": "R$ 997", "whatsDownway": "5500000000000" }
+}
