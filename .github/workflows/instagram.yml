@@ -1,11 +1,9 @@
 name: Fotos do Instagram
 
 # Baixa logo e fotos reais dos leads, regera os sites e a planilha, e commita na própria branch.
+# Só manual: o Instagram responde 429 para IPs do GitHub sem login, então não roda sozinho.
 on:
   workflow_dispatch:
-  push:
-    branches: [claude/quirky-thompson-a4w609]
-    paths: ['.github/workflows/instagram.yml', 'leads/leads.json', 'generator/instagram.mjs']
 
 permissions:
   contents: write
