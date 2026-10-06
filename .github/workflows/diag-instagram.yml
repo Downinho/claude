@@ -1,0 +1,11 @@
+name: Diagnóstico Instagram
+on:
+  push:
+    branches: [claude/quirky-thompson-a4w609]
+    paths: ['scripts/diag_instagram.sh', '.github/workflows/diag-instagram.yml']
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash scripts/diag_instagram.sh
