@@ -1,0 +1,53 @@
+name: Fotos do Instagram
+
+# Baixa logo e fotos reais dos leads, regera os sites e a planilha, e commita na própria branch.
+on:
+  workflow_dispatch:
+  push:
+    branches: [claude/quirky-thompson-a4w609]
+    paths: ['.github/workflows/instagram.yml', 'leads/leads.json', 'generator/instagram.mjs']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: instagram
+  cancel-in-progress: false
+
+jobs:
+  fotos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install openpyxl
+
+      - name: Baixar do Instagram (com novas tentativas se limitar)
+        run: |
+          for i in 1 2 3 4 5; do
+            node generator/instagram.mjs 2>&1 | tee -a instagram.log
+            faltam=$(node -e "const fs=require('fs');const l=require('./leads/leads.json');console.log(l.filter(x=>!fs.existsSync('prospects/'+x.slug+'/assets/logo.jpg')).length)")
+            echo "Faltam: $faltam"
+            [ "$faltam" -le 3 ] && break
+            sleep 180
+          done
+
+      - run: npm run build
+      - run: npm run planilha
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: instagram-log, path: instagram.log }
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A prospects dist leads
+          git diff --cached --quiet && { echo "Nada novo"; exit 0; }
+          git commit -m "Fotos e logos reais do Instagram nas prévias"
+          git push
