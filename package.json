@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "node generator/build.mjs",
-    "build:one": "node generator/build.mjs --only"
+    "instagram": "node generator/instagram.mjs",
+    "build": "node generator/build.mjs && python3 scripts/catalogo.py && cd dist && rm -f demo.zip && zip -qr demo.zip demo",
+    "planilha": "python3 scripts/planilha.py",
+    "leads": "python3 scripts/montar_leads.py"
   }
 }
