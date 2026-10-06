@@ -30,7 +30,7 @@ jobs:
         run: |
           for i in 1 2 3 4 5; do
             node generator/instagram.mjs 2>&1 | tee -a instagram.log
-            faltam=$(node -e "const fs=require('fs');const l=require('./leads/leads.json');console.log(l.filter(x=>!fs.existsSync('prospects/'+x.slug+'/assets/logo.jpg')).length)")
+            faltam=$(node -e "const fs=require('fs');const l=require('./leads/leads.json');console.log(l.filter(x=>!fs.existsSync('prospects/'+x.slug+'/assets/logo.jpg')&&!fs.existsSync('prospects/'+x.slug+'/instagram.json')).length)")
             echo "Faltam: $faltam"
             [ "$faltam" -le 3 ] && break
             sleep 180
@@ -50,4 +50,5 @@ jobs:
           git add -A prospects dist leads
           git diff --cached --quiet && { echo "Nada novo"; exit 0; }
           git commit -m "Fotos e logos reais do Instagram nas prévias"
+          git pull --rebase origin claude/quirky-thompson-a4w609
           git push
