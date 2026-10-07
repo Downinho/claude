@@ -1,0 +1,35 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Downway filmes</title>
+<style>
+@font-face{font-family:"Bebas Neue";src:url(fonts/bebas-neue-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Plex Mono";font-weight:400;src:url(fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Plex Mono";font-weight:500;src:url(fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Inter";font-weight:100 900;src:url(fonts/inter-latin-wght-normal.woff2) format("woff2")}
+html,body{margin:0;background:#000}canvas#c{display:block;width:100vw;height:auto}
+</style>
+<script type="importmap">{"imports":{"three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+</head><body><canvas id="c"></canvas>
+<script src="engine2d.js"></script>
+<script type="module">
+// Host dos filmes. ?c=E&lang=pt&mode=preview|3d|comp
+// Cada filme (films/X.js) exporta: DURATION, setup(kit) async, render3d(t) -> bool (desenhou 3D?), render2d(t, lang, has3d)
+const q = new URLSearchParams(location.search);
+const c = q.get("c") || "E", lang = q.get("lang") || "pt", mode = q.get("mode") || "preview";
+window.LANG = lang;
+await Promise.all(['120px "Bebas Neue"','400 20px "Plex Mono"','500 20px "Plex Mono"','400 20px "Inter"','500 20px "Inter"','700 20px "Inter"'].map((f) => document.fonts.load(f)));
+const kit = mode === "comp" ? null : await import("./kit3d.js");
+const film = await import(`./films/${c}.js`);
+await loadImages(["logo-downway.png", ...(film.IMAGES || [])]);
+if (film.setup) await film.setup(kit, mode);
+window.DURATION = film.DURATION;
+const stage = () => film.stage;
+const draw3d = (t) => { const has = kit && film.render3d ? film.render3d(t) : false; if (has) film.stage.render(); return has; };
+window.frame3d = (t) => draw3d(t) ? film.stage.canvas.toDataURL("image/jpeg", 0.94) : null;
+window.framePreview = (t) => { ctx.clearRect(0, 0, W, H); const has = draw3d(t); if (has) ctx.drawImage(film.stage.canvas, 0, 0, W, H); film.render2d(t, lang, has); };
+const imgCache = new Image();
+window.frameComp = async (t, url) => {
+  ctx.clearRect(0, 0, W, H);
+  if (url) { imgCache.src = url; await imgCache.decode(); ctx.drawImage(imgCache, 0, 0, W, H); }
+  film.render2d(t, lang, !!url);
+};
+window.ready = true;
+</script></body></html>
