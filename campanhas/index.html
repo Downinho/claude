@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>Downway Campanhas Globais</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,7 +29,9 @@
 
   .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 32px; padding-block: 28px 80px; }
   nav.camps { position: sticky; top: 16px; align-self: start; display: grid; gap: 8px; }
-  nav.camps button { all: unset; cursor: pointer; display: grid; grid-template-columns: 38px 1fr; gap: 4px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); transition: border-color .2s, background .2s; }
+  #list { display: grid; gap: 8px; }
+  @media (max-width: 900px) { #list { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); } }
+  nav.camps button { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: 38px 1fr; gap: 4px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); transition: border-color .2s, background .2s; }
   nav.camps button:hover { border-color: #3a3a3f; }
   nav.camps button[aria-selected="true"] { border-color: var(--brand); background: linear-gradient(90deg, rgba(34,130,240,.16), var(--surface)); }
   nav.camps .k { grid-row: span 2; font: 400 38px/1 var(--display); color: var(--brand); text-align: center; }
@@ -62,7 +65,7 @@
 
   @media (max-width: 900px) {
     .layout { grid-template-columns: minmax(0, 1fr); }
-    nav.camps { position: static; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+    nav.camps { position: static; }
     nav.camps button { grid-template-columns: 30px 1fr; padding: 10px; }
     nav.camps .k { font-size: 30px; }
     nav.camps .s { display: none; }
@@ -95,11 +98,11 @@ const CAMPS = [
   { k: "D", file: "D-sua-engenharia-merece-ser-encontrada.md", n: "Sua engenharia merece ser encontrada", s: "PRESENÇA DIGITAL" },
   { k: "E", file: "E-do-cad-a-realidade.md", n: "Do CAD à realidade", s: "ENGENHARIA E PROTÓTIPO" },
   { k: "F", file: "F-o-site-industrial.md", n: "O site industrial", s: "GERAÇÃO DE ORÇAMENTOS" },
-  { k: "★", file: "_BRIEF.md", n: "Brief e regras da marca", s: "FONTE ÚNICA" },
+  { k: "★", file: "brief.md", alt: "_BRIEF.md", n: "Brief e regras da marca", s: "FONTE ÚNICA" },
 ];
 const list = document.getElementById("list"), doc = document.getElementById("doc"), toc = document.getElementById("toc");
 const cache = {};
-const slug = (s) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const slug = (s) => s.toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 
 CAMPS.forEach((c, i) => {
   const b = document.createElement("button");
@@ -115,7 +118,7 @@ async function show(i, scroll) {
   try { history.replaceState(null, "", "#" + (c.k === "★" ? "brief" : c.k)); } catch (e) {}
   if (!cache[c.file]) {
     doc.innerHTML = '<p class="loading">CARREGANDO…</p>';
-    try { const r = await fetch(c.file); cache[c.file] = r.ok ? await r.text() : null; } catch (e) { cache[c.file] = null; }
+    for (const f of [c.file, c.alt].filter(Boolean)) { try { const r = await fetch(f); if (r.ok) { cache[c.file] = await r.text(); break; } } catch (e) {} }
   }
   const md = cache[c.file];
   if (!md) { doc.innerHTML = '<p class="loading">Arquivo não encontrado.</p>'; return; }
