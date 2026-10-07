@@ -1,0 +1,388 @@
+<title>Downway Global Hero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: hero de duas colunas, texto à esquerda e globo sangrando à direita; empilha no mobile. Visual único, escuro, blueprint industrial. */
+:root {
+  color-scheme: dark;
+  --bg: #0A1220;
+  --bg-2: #0E1A2D;
+  --line: #1B2F50;
+  --text: #E6EDF7;
+  --text-2: #A3B3C9;
+  --muted: #6F84A3;
+  --accent: #3FD0F0;
+  --blue: #1E6BFF;
+  --display: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif;
+  --body: 'IBM Plex Sans', 'Helvetica Neue', Arial, sans-serif;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--text); }
+body { margin: 0; font-family: var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+.page { position: relative; min-height: 100%; padding-inline: clamp(16px, 4vw, 64px); padding-block: 0 40px;
+  background:
+    radial-gradient(ellipse 60% 70% at 72% 48%, rgba(30,107,255,.16), transparent 70%),
+    linear-gradient(var(--line) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, var(--line) 1px, transparent 1px) 0 0 / 40px 40px,
+    var(--bg);
+  background-blend-mode: normal, soft-light, soft-light, normal;
+}
+.page::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 90% 80% at 50% 40%, transparent 40%, var(--bg) 100%); }
+nav { position: relative; z-index: 3; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 24px; max-width: 1320px; margin-inline: auto; }
+.brand { display: flex; align-items: center; gap: 12px; font-family: var(--display); font-weight: 700; letter-spacing: .06em; font-size: 18px; color: var(--text); text-decoration: none; }
+.brand-mark { width: 30px; height: 30px; border: 1.5px solid var(--accent); border-radius: 7px; display: grid; place-items: center; }
+.brand-mark span { width: 10px; height: 10px; background: var(--accent); transform: rotate(45deg); box-shadow: 0 0 12px var(--accent); }
+.links { display: flex; gap: 28px; font-size: 15px; }
+.links a { color: var(--text-2); text-decoration: none; }
+.links a:hover, .links a:focus-visible { color: var(--text); }
+.lang { font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: .1em; }
+.lang b { color: var(--accent); font-weight: 600; }
+.hero { position: relative; z-index: 2; max-width: 1320px; margin-inline: auto; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 24px; min-height: 640px; }
+.copy { display: flex; flex-direction: column; gap: 26px; min-width: 0; }
+.eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: .18em; color: var(--accent); display: flex; align-items: center; gap: 12px; }
+.eyebrow::before { content: ""; width: 32px; height: 1.5px; background: var(--accent); }
+h1 { margin: 0; font-family: var(--display); font-weight: 600; font-size: clamp(40px, 5.4vw, 74px); line-height: 1.02; letter-spacing: -.025em; text-wrap: balance; }
+h1 em { font-style: normal; color: var(--accent); }
+.sub { margin: 0; font-size: clamp(17px, 1.5vw, 20px); line-height: 1.55; color: var(--text-2); max-width: 34em; }
+.ctas { display: flex; flex-wrap: wrap; gap: 14px; }
+.btn { font-family: var(--mono); font-size: 14px; font-weight: 600; letter-spacing: .08em; padding: 16px 24px; border-radius: 10px; text-decoration: none; transition: transform .2s, box-shadow .2s, background .2s; }
+.btn-primary { background: var(--accent); color: #06111F; box-shadow: 0 10px 34px -12px var(--accent); }
+.btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -12px var(--accent); }
+.btn-ghost { color: var(--accent); border: 1.5px solid rgba(63,208,240,.55); }
+.btn-ghost:hover { background: rgba(63,208,240,.08); }
+.btn:focus-visible, .links a:focus-visible, .replay:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.proof { font-family: var(--mono); font-size: 12px; letter-spacing: .06em; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.proof span::before { content: "▸ "; color: var(--accent); }
+.stage { position: relative; aspect-ratio: 1; width: 100%; max-width: 760px; justify-self: end; }
+canvas { width: 100%; height: 100%; display: block; cursor: grab; touch-action: pan-y; -webkit-mask-image: radial-gradient(closest-side, #000 84%, transparent 100%); mask-image: radial-gradient(closest-side, #000 84%, transparent 100%); }
+canvas:active { cursor: grabbing; }
+.tag { position: absolute; left: 0; top: 0; pointer-events: none; font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--text); white-space: nowrap; opacity: 0; transition: opacity .5s; padding: 3px 7px; border: 1px solid rgba(63,208,240,.35); background: rgba(10,18,32,.72); border-radius: 4px; }
+.tag.origin { color: #06111F; background: var(--accent); border-color: var(--accent); font-weight: 600; }
+.tag.planned { color: var(--text-2); border-style: dashed; }
+.hud { position: absolute; left: 0; bottom: 4%; display: grid; gap: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--muted); pointer-events: none; }
+.hud b { color: var(--text); font-weight: 600; }
+.hud .live::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-right: 8px; box-shadow: 0 0 10px var(--accent); animation: blink 1.6s infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.replay { position: absolute; right: 2%; bottom: 4%; font-family: var(--mono); font-size: 11px; letter-spacing: .12em; color: var(--text-2); background: rgba(10,18,32,.7); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+.replay:hover { color: var(--accent); border-color: var(--accent); }
+.dim { position: relative; z-index: 2; max-width: 1320px; margin: 8px auto 0; display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: .14em; color: var(--muted); }
+.dim::before, .dim::after { content: ""; height: 1px; flex: 1; background: linear-gradient(90deg, transparent, var(--line)); }
+.dim::after { background: linear-gradient(90deg, var(--line), transparent); }
+@media (max-width: 900px) {
+  .links { display: none; }
+  .hero { grid-template-columns: minmax(0, 1fr); min-height: 0; gap: 8px; padding-block: 8px 0; }
+  .stage { justify-self: center; max-width: 560px; }
+  canvas { cursor: default; }
+}
+@media (prefers-reduced-motion: reduce) { .hud .live::before { animation: none; } .btn { transition: none; } }
+</style>
+
+<div class="page">
+  <nav aria-label="Main">
+    <a class="brand" href="#"><span class="brand-mark" aria-hidden="true"><span></span></span>DOWNWAY</a>
+    <div class="links"><a href="#">Services</a><a href="#">Cases</a><a href="#">Process</a><a href="#">About</a></div>
+    <span class="lang"><b>EN</b> / PT</span>
+  </nav>
+
+  <section class="hero">
+    <div class="copy">
+      <p class="eyebrow">REMOTE ENGINEERING FOR MANUFACTURERS</p>
+      <h1>Engineering capacity without another <em>full&#8209;time hire.</em></h1>
+      <p class="sub">CAD, manufacturing documentation and automation for manufacturers, delivered remotely by mechanical engineers in Brazil, on hours that overlap yours.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="#">START A PROJECT</a>
+        <a class="btn btn-ghost" href="#">SEND A DRAWING</a>
+      </div>
+      <div class="proof"><span>SolidWorks</span><span>ASME Y14.5</span><span>STEP · DXF · PDF</span><span>NDA first</span><span>US-friendly hours</span></div>
+    </div>
+
+    <div class="stage" id="stage">
+      <canvas id="globe" role="img" aria-label="Globe: Brazil fills with blue from São Paulo, then connection arcs reach Chicago, Houston, Atlanta, Toronto and Birmingham, with Stuttgart and Eindhoven as planned routes."></canvas>
+      <div class="hud" aria-hidden="true">
+        <span class="live">LIVE NETWORK</span>
+        <span>ORIGIN <b>23.55°S 46.63°W</b></span>
+        <span>ROUTES <b id="routes">00</b> ACTIVE · <b id="planned">00</b> PLANNED</span>
+      </div>
+      <button class="replay" id="replay" type="button">↻ REPLAY</button>
+    </div>
+  </section>
+  <p class="dim" aria-hidden="true">BRAZIL → NORTH AMERICA → EUROPE</p>
+</div>
+
+<script>
+const DATA = __DATA__;
+
+(() => {
+  const DEG = Math.PI / 180;
+  const ORIGIN = { name: 'SÃO PAULO · BR', lon: -46.63, lat: -23.55 };
+  // Destinos na ordem da estratégia: EUA, Canadá, Reino Unido; Alemanha e Países Baixos planejados.
+  const ROUTES = [
+    { name: 'CHICAGO · US', lon: -87.63, lat: 41.88, lab: [-12, -30, 'l'] },
+    { name: 'HOUSTON · US', lon: -95.37, lat: 29.76, lab: [-12, 6, 'l'], compact: false },
+    { name: 'ATLANTA · US', lon: -84.39, lat: 33.75, lab: [12, 6, 'r'], compact: false },
+    { name: 'TORONTO · CA', lon: -79.38, lat: 43.65, lab: [12, -30, 'r'] },
+    { name: 'BIRMINGHAM · UK', lon: -1.89, lat: 52.48, lab: [-12, -30, 'l'] },
+    { name: 'STUTTGART · DE', lon: 9.18, lat: 48.78, planned: true, lab: [12, 8, 'r'], compact: false },
+    { name: 'EINDHOVEN · NL', lon: 5.47, lat: 51.44, planned: true, lab: [12, -30, 'r'] },
+  ];
+  // Linha do tempo (ms)
+  const T = { intro: 900, fillStart: 700, fillDur: 2300, camStart: 3000, camDur: 1500, arcsStart: 4300, arcGap: 420, arcDur: 1500 };
+  const VIEW_A = { lon: -53, lat: -13, zoom: 1.32 };   // close no Brasil
+  const VIEW_B = { lon: -42, lat: 22, zoom: 0.86 };    // Brasil + América do Norte + Europa
+
+  const canvas = document.getElementById('globe');
+  const stage = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const routesEl = document.getElementById('routes');
+  const plannedEl = document.getElementById('planned');
+
+  const unit = (lon, lat) => { const l = lon * DEG, p = lat * DEG; return [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)]; };
+  const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+
+  // Pontos de terra em vetores unitários
+  const n = DATA.pts.length / 3;
+  const P = new Float32Array(n * 3), BRD = new Float32Array(n);
+  let maxD = 0;
+  for (let i = 0; i < n; i++) {
+    const v = unit(DATA.pts[i * 3] / 10, DATA.pts[i * 3 + 1] / 10);
+    P[i * 3] = v[0]; P[i * 3 + 1] = v[1]; P[i * 3 + 2] = v[2];
+    BRD[i] = DATA.pts[i * 3 + 2] / 10; if (BRD[i] > maxD) maxD = BRD[i];
+  }
+  const brIdx = []; for (let i = 0; i < n; i++) if (BRD[i] > 0) brIdx.push(i);
+  // Contorno do Brasil
+  const brRings = (DATA.br.type === 'Polygon' ? [DATA.br.coordinates] : DATA.br.coordinates).map(p => p[0].map(([x, y]) => unit(x, y)));
+  // Graticule
+  const grat = [];
+  for (let lon = -180; lon < 180; lon += 20) { const r = []; for (let lat = -80; lat <= 80; lat += 4) r.push(unit(lon, lat)); grat.push(r); }
+  for (let lat = -60; lat <= 60; lat += 20) { const r = []; for (let lon = -180; lon <= 180; lon += 4) r.push(unit(lon, lat)); grat.push(r); }
+
+  // Arcos com altitude proporcional à distância
+  const O = unit(ORIGIN.lon, ORIGIN.lat);
+  const slerp = (a, b, t, w) => { const s = Math.sin(w); const k1 = Math.sin((1 - t) * w) / s, k2 = Math.sin(t * w) / s; return [a[0] * k1 + b[0] * k2, a[1] * k1 + b[1] * k2, a[2] * k1 + b[2] * k2]; };
+  ROUTES.forEach(r => {
+    const B = unit(r.lon, r.lat);
+    const w = Math.acos(clamp(O[0] * B[0] + O[1] * B[1] + O[2] * B[2], -1, 1));
+    const h = 0.08 + w * 0.16;
+    r.v = B; r.samples = [];
+    for (let i = 0; i <= 80; i++) { const t = i / 80, p = slerp(O, B, t, w), k = 1 + h * Math.sin(Math.PI * t); r.samples.push([p[0] * k, p[1] * k, p[2] * k]); }
+    r.ring = []; for (let i = 0; i <= 32; i++) r.ring.push(i / 32 * Math.PI * 2);
+    r.el = document.createElement('span'); r.el.className = 'tag' + (r.planned ? ' planned' : ''); r.el.textContent = r.name; stage.appendChild(r.el);
+  });
+  const originEl = document.createElement('span'); originEl.className = 'tag origin'; originEl.textContent = 'ORIGIN · ' + ORIGIN.name; stage.appendChild(originEl);
+
+  // Estado de câmera
+  let W = 0, H = 0, dpr = 1;
+  const cam = { lon: VIEW_A.lon, lat: VIEW_A.lat, zoom: VIEW_A.zoom };
+  let E = [0, 0, 0], N = [0, 0, 0], C = [0, 0, 0], R = 0, cx = 0, cy = 0;
+  function setCam(lon, lat) {
+    const l = lon * DEG, p = lat * DEG;
+    C = [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)];
+    E = [-Math.sin(l), Math.cos(l), 0];
+    N = [-Math.sin(p) * Math.cos(l), -Math.sin(p) * Math.sin(l), Math.cos(p)];
+  }
+  const proj = v => [cx + R * (v[0] * E[0] + v[1] * E[1] + v[2] * E[2]), cy - R * (v[0] * N[0] + v[1] * N[1] + v[2] * N[2]), v[0] * C[0] + v[1] * C[1] + v[2] * C[2]];
+  // Ponto elevado é visível se estiver na frente ou fora do disco do globo
+  const visible = (v, s) => s[2] > 0 || Math.hypot(s[0] - cx, s[1] - cy) > R;
+
+  let compact = false;
+  function resize() {
+    const r = canvas.getBoundingClientRect();
+    const was = compact; compact = r.width < 600;
+    if (compact !== was) {
+      ROUTES.forEach(x => { x.el.textContent = compact ? x.name.split(' · ')[1] + (x.name.startsWith('EINDHOVEN') ? ' · DE' : '') : x.name; });
+      originEl.textContent = compact ? 'BR · ORIGIN' : 'ORIGIN · ' + ORIGIN.name;
+    }
+    dpr = Math.min(window.devicePixelRatio || 1, innerWidth < 700 ? 1.5 : 2);
+    W = canvas.width = Math.round(r.width * dpr); H = canvas.height = Math.round(r.height * dpr);
+  }
+
+  // Interação: arrastar gira; solto, volta suavemente à vista principal
+  let drag = null, off = { lon: 0, lat: 0 }, relaxFrom = null;
+  const coarse = matchMedia('(pointer: coarse)').matches;
+  if (!coarse) {
+    canvas.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY, lon: off.lon, lat: off.lat }; relaxFrom = null; canvas.setPointerCapture(e.pointerId); });
+    canvas.addEventListener('pointermove', e => { if (!drag) return; const k = 160 / canvas.clientWidth; off.lon = drag.lon - (e.clientX - drag.x) * k; off.lat = clamp(drag.lat + (e.clientY - drag.y) * k, -40, 40); });
+    const end = () => { if (drag) { drag = null; relaxFrom = { t: performance.now(), lon: off.lon, lat: off.lat }; } };
+    canvas.addEventListener('pointerup', end); canvas.addEventListener('pointercancel', end);
+  }
+
+  let t0 = performance.now(), running = true, raf = 0, last = 0;
+
+  function draw(now) {
+    const t = reduce ? 1e6 : now - t0;
+    // Câmera: close no Brasil, depois abre para o Atlântico Norte, depois oscila levemente
+    const cp = ease(clamp((t - T.camStart) / T.camDur));
+    let lon = VIEW_A.lon + (VIEW_B.lon - VIEW_A.lon) * cp;
+    let lat = VIEW_A.lat + (VIEW_B.lat - VIEW_A.lat) * cp;
+    const zoom = VIEW_A.zoom + ((compact ? 0.96 : VIEW_B.zoom) - VIEW_A.zoom) * cp;
+    if (!reduce && t > T.camStart + T.camDur) { const s = (t - T.camStart - T.camDur) / 1000; lon += Math.sin(s * 0.35) * 7 * clamp(s / 3); lat += Math.sin(s * 0.22) * 2.5 * clamp(s / 3); }
+    if (relaxFrom) { const k = ease(clamp((now - relaxFrom.t) / 1800)); off.lon = relaxFrom.lon * (1 - k); off.lat = relaxFrom.lat * (1 - k); if (k >= 1) relaxFrom = null; }
+    setCam(lon + off.lon, lat + off.lat);
+    const intro = easeOut(clamp(t / T.intro));
+    R = Math.min(W, H) * 0.42 * zoom * (0.94 + 0.06 * intro); cx = W / 2; cy = H / 2;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.globalAlpha = intro;
+
+    // Atmosfera e corpo do globo
+    let g = ctx.createRadialGradient(cx, cy, R * 0.9, cx, cy, R * 1.18);
+    g.addColorStop(0, 'rgba(63,208,240,0.20)'); g.addColorStop(0.35, 'rgba(30,107,255,0.10)'); g.addColorStop(1, 'rgba(30,107,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R * 1.18, 0, Math.PI * 2); ctx.fill();
+    g = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
+    g.addColorStop(0, '#13284A'); g.addColorStop(1, '#081020');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(63,208,240,0.35)'; ctx.lineWidth = 1 * dpr; ctx.stroke();
+
+    // Graticule de blueprint
+    ctx.strokeStyle = 'rgba(80,130,200,0.12)'; ctx.lineWidth = 0.8 * dpr; ctx.beginPath();
+    for (const ring of grat) { let pen = false; for (const v of ring) { const s = proj(v); if (s[2] > 0) { pen ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); pen = true; } else pen = false; } }
+    ctx.stroke();
+
+    // Terra em pontos
+    const front = ease(clamp((t - T.fillStart) / T.fillDur)) * (maxD + 6);
+    const ds = Math.max(1.1, R / 260) * dpr;
+    ctx.fillStyle = '#4C6E9E';
+    for (let i = 0; i < n; i++) {
+      if (BRD[i] > 0 && BRD[i] <= front) continue;
+      const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+      const d = x * C[0] + y * C[1] + z * C[2]; if (d <= 0.02) continue;
+      ctx.globalAlpha = intro * (0.18 + 0.62 * d);
+      ctx.fillRect(cx + R * (x * E[0] + y * E[1] + z * E[2]) - ds / 2, cy - R * (x * N[0] + y * N[1] + z * N[2]) - ds / 2, ds, ds);
+    }
+    // Brasil aceso: onda azul a partir de São Paulo, com frente ciano
+    const settled = clamp((t - T.fillStart - T.fillDur) / 900);
+    for (const i of brIdx) {
+      const dist = BRD[i]; if (dist > front) continue;
+      const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+      const d = x * C[0] + y * C[1] + z * C[2]; if (d <= 0.02) continue;
+      const wave = Math.exp(-Math.pow((front - dist) / 3.2, 2)) * (1 - settled);
+      const shimmer = reduce ? 0 : 0.12 * Math.sin(t / 380 + dist * 0.9) * settled;
+      const sz = ds * (1.25 + wave * 1.4);
+      ctx.globalAlpha = intro * clamp(0.55 + 0.45 * d + wave + shimmer);
+      ctx.fillStyle = wave > 0.25 ? '#9BEFFF' : (wave > 0.06 ? '#3FD0F0' : '#2F7BFF');
+      ctx.fillRect(cx + R * (x * E[0] + y * E[1] + z * E[2]) - sz / 2, cy - R * (x * N[0] + y * N[1] + z * N[2]) - sz / 2, sz, sz);
+    }
+    ctx.globalAlpha = intro;
+
+    // Contorno do Brasil com brilho
+    const outline = easeOut(clamp((t - T.fillStart - T.fillDur * 0.75) / 900));
+    if (outline > 0) {
+      ctx.save(); ctx.globalAlpha = outline * 0.9; ctx.strokeStyle = '#3FD0F0'; ctx.lineWidth = 1.4 * dpr; ctx.shadowColor = '#3FD0F0'; ctx.shadowBlur = 14 * dpr; ctx.beginPath();
+      for (const ring of brRings) { let pen = false; for (const v of ring) { const s = proj(v); if (s[2] > 0) { pen ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); pen = true; } else pen = false; } }
+      ctx.stroke(); ctx.restore();
+    }
+
+    // Origem: São Paulo
+    const so = proj(O);
+    if (so[2] > 0 && t > T.fillStart) {
+      const pulse = reduce ? 0.5 : (t % 1800) / 1800;
+      ctx.strokeStyle = '#3FD0F0'; ctx.lineWidth = 1.5 * dpr;
+      ctx.globalAlpha = intro * (1 - pulse); ctx.beginPath(); ctx.arc(so[0], so[1], (4 + pulse * 22) * dpr, 0, Math.PI * 2); ctx.stroke();
+      ctx.globalAlpha = intro; ctx.fillStyle = '#E6FBFF'; ctx.shadowColor = '#3FD0F0'; ctx.shadowBlur = 16 * dpr;
+      ctx.beginPath(); ctx.arc(so[0], so[1], 3.6 * dpr, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
+    }
+    place(originEl, so, t > T.fillStart + 400 && so[2] > 0, 14, -10);
+
+    // Arcos
+    let active = 0, planned = 0;
+    ROUTES.forEach((r, k) => {
+      const start = T.arcsStart + k * T.arcGap;
+      const p = clamp((t - start) / T.arcDur); if (p <= 0) { place(r.el, null, false); return; }
+      const head = easeOut(p), m = Math.floor(head * 80);
+      const col = r.planned ? '125,170,220' : '63,208,240';
+      ctx.lineCap = 'round';
+      if (r.planned) ctx.setLineDash([5 * dpr, 6 * dpr]);
+      // rastro: base fraca + trecho final brilhante
+      for (let i = 1; i <= m; i++) {
+        const a = proj(r.samples[i - 1]), b = proj(r.samples[i]);
+        if (!visible(r.samples[i], b)) continue;
+        const tail = (m - i) / 80;
+        const alpha = p < 1 ? Math.max(0.18, 1 - tail * 3.2) : 0.42;
+        ctx.globalAlpha = intro * alpha * (r.planned ? 0.75 : 1);
+        ctx.strokeStyle = `rgba(${col},1)`; ctx.lineWidth = (r.planned ? 1.2 : 1.8) * dpr;
+        ctx.beginPath(); ctx.moveTo(a[0], a[1]); ctx.lineTo(b[0], b[1]); ctx.stroke();
+      }
+      ctx.setLineDash([]);
+      // cabeça do arco
+      if (p < 1) {
+        const s = proj(r.samples[m]);
+        if (visible(r.samples[m], s)) { ctx.globalAlpha = intro; ctx.fillStyle = '#E6FBFF'; ctx.shadowColor = '#3FD0F0'; ctx.shadowBlur = 18 * dpr; ctx.beginPath(); ctx.arc(s[0], s[1], 3 * dpr, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; }
+      } else if (!r.planned && !reduce) {
+        // pacotes de dados circulando na rota
+        for (let q = 0; q < 2; q++) {
+          const f = ((t - start) / 2600 + q * 0.5) % 1, i = Math.floor(f * 80);
+          const s = proj(r.samples[i]); if (!visible(r.samples[i], s)) continue;
+          ctx.globalAlpha = intro * Math.sin(Math.PI * f); ctx.fillStyle = '#BFF3FF';
+          ctx.beginPath(); ctx.arc(s[0], s[1], 1.9 * dpr, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      // destino: ponto e anéis pulsantes
+      const dst = proj(r.v), arrived = p >= 1;
+      if (arrived) { r.planned ? planned++ : active++; }
+      if (arrived && dst[2] > 0.05) {
+        const since = t - start - T.arcDur;
+        for (let q = 0; q < 2; q++) {
+          const ph = reduce ? 0.35 + q * 0.3 : ((since / 1700) + q * 0.5) % 1;
+          const rad = (2 + ph * 4.5) * DEG;
+          ctx.globalAlpha = intro * (1 - ph) * (r.planned ? 0.5 : 0.9);
+          ctx.strokeStyle = `rgba(${col},1)`; ctx.lineWidth = 1.2 * dpr; ctx.beginPath();
+          r.ring.forEach((ang, i) => { const v = ringPoint(r.v, rad, ang); const s = proj(v); i ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); });
+          ctx.stroke();
+        }
+        ctx.globalAlpha = intro; ctx.fillStyle = r.planned ? '#7DAADC' : '#3FD0F0';
+        ctx.beginPath(); ctx.arc(dst[0], dst[1], 2.8 * dpr, 0, Math.PI * 2); ctx.fill();
+      }
+      place(r.el, dst, arrived && dst[2] > 0.12 && !(compact && r.compact === false), r.lab[0], r.lab[1], r.lab[2]);
+    });
+    ctx.globalAlpha = 1;
+    routesEl.textContent = String(active).padStart(2, '0');
+    plannedEl.textContent = String(planned).padStart(2, '0');
+  }
+
+  // Círculo pequeno sobre a esfera em torno de um ponto (para os anéis)
+  function ringPoint(c, rad, ang) {
+    const up = Math.abs(c[2]) < 0.99 ? [0, 0, 1] : [1, 0, 0];
+    let a = [c[1] * up[2] - c[2] * up[1], c[2] * up[0] - c[0] * up[2], c[0] * up[1] - c[1] * up[0]];
+    const la = Math.hypot(a[0], a[1], a[2]); a = a.map(x => x / la);
+    const b = [c[1] * a[2] - c[2] * a[1], c[2] * a[0] - c[0] * a[2], c[0] * a[1] - c[1] * a[0]];
+    const cr = Math.cos(rad), sr = Math.sin(rad), ca = Math.cos(ang), sa = Math.sin(ang);
+    return [c[0] * cr + (a[0] * ca + b[0] * sa) * sr, c[1] * cr + (a[1] * ca + b[1] * sa) * sr, c[2] * cr + (a[2] * ca + b[2] * sa) * sr];
+  }
+
+  function place(el, s, show, dx = 10, dy = -10, side = 'r') {
+    if (!show || !s) { el.style.opacity = 0; return; }
+    el.style.opacity = 1;
+    const w = el.offsetWidth, sw = stage.clientWidth;
+    let x = side === 'l' ? s[0] / dpr + dx - w : s[0] / dpr + dx, y = s[1] / dpr + dy;
+    if (x + w > sw - 4) x = sw - 4 - w;
+    if (x < 4) x = 4;
+    el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
+  }
+
+  function loop(now) {
+    if (!running) return;
+    if (now - last > 14) { draw(now); last = now; }
+    raf = requestAnimationFrame(loop);
+  }
+  function start() { if (running) return; running = true; raf = requestAnimationFrame(loop); }
+  function stop() { running = false; cancelAnimationFrame(raf); }
+
+  resize();
+  addEventListener('resize', () => { resize(); if (reduce || !running) draw(performance.now()); });
+  document.getElementById('replay').addEventListener('click', () => { t0 = performance.now(); off = { lon: 0, lat: 0 }; relaxFrom = null; if (reduce) draw(performance.now()); });
+
+  if (reduce) { running = false; draw(performance.now()); return; }
+  raf = requestAnimationFrame(loop);
+  // Pausa fora da tela e com a aba oculta
+  new IntersectionObserver(es => es.forEach(e => e.isIntersecting ? start() : stop()), { threshold: 0.05 }).observe(canvas);
+  document.addEventListener('visibilitychange', () => document.hidden ? stop() : start());
+  // Gancho para screenshots de teste em momentos específicos
+  window.__globeSeek = ms => { stop(); t0 = performance.now() - ms; draw(performance.now()); };
+})();
+</script>
