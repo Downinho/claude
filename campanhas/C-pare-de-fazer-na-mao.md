@@ -660,7 +660,7 @@ NOT AI-GENERATED. Full-screen motion design: generic spreadsheet columns acquiri
 NOT AI-GENERATED. Full-screen motion design of an unbranded node-based workflow editor on a graphite dotted grid: Quote spreadsheet → Validate part number vs drawing → Calculate cost and lead time → Generate quote PDF → Send to customer + log; secondary branch Shift A/B entries → Consolidate production report. Blue #2282f0 pulse travels one node per beat. See section 9, shot 09.
 ```
 
-**SHOT 10 — Clock resumes (physical plate) — 1.2 s of the 3.5 s shot**
+**SHOT 10 — Clock resumes (physical plate) — last 1.5 s of the 3.5 s shot**
 ```
 Frontal macro shot of the same plain round industrial wall clock with a red second hand on an office drywall, now a warm low beam of late-afternoon sunlight crosses the wall; the second hand ticks once and continues at a calm normal pace. Photorealistic, 100mm macro lens, locked-off tripod, matching the earlier clock shot exactly. No brand name on the dial. Duration 1.5 seconds.
 ```
@@ -762,10 +762,8 @@ Som: manter o silêncio do congelamento (mínimo de 0,6 s) e o clique de relé n
 > #AutomaçãoDeProcessos #Indústria #EngenhariaDigital
 
 **PT — Instagram/TikTok (curta):**
-> Suas teclas C e V estão gastas? 👉 O problema não é a pessoa, é o processo. Deixe a tecnologia fazer o trabalho repetitivo. Diagnóstico sem custo: link na bio.
+> Suas teclas C e V estão gastas? O problema não é a pessoa, é o processo. Deixe a tecnologia fazer o trabalho repetitivo. Diagnóstico sem custo: link na bio.
 > #indústria #automação #chãodefábrica
-
-*(Nota: se a política da marca vetar emoji, trocar 👉 por "—".)*
 
 **EN — LinkedIn (short):**
 > Part number copied from the drawing. Pasted into a spreadsheet. Typed in again for the quote. Checked again by email.
