@@ -1,0 +1,232 @@
+---
+import { Image } from "astro:assets";
+import Base from "@/layouts/Base.astro";
+import Icon from "@/components/Icon.astro";
+import PlanCard from "@/components/PlanCard.astro";
+import CheckoutDialog from "@/components/CheckoutDialog.astro";
+import LeadForm from "@/components/LeadForm.astro";
+import GlobeIntro from "@/components/GlobeIntro.astro";
+// import ServicesIntro from "@/components/ServicesIntro.astro"; // intro anterior — para voltar, troque o componente abaixo
+import { useT, fill, money, showTodos } from "@/i18n";
+import { path, projectPath, otherServices, type Lang } from "@/i18n/routes";
+import { projetos } from "@/data/projetos";
+import { depoimentos } from "@/data/depoimentos";
+import { getPlans, lowestPlanPrice } from "@/lib/plans";
+import fotoFabrica from "@/assets/fotos/fabrica.jpg";
+import fotoLab from "@/assets/fotos/engenharia-monitores.jpg";
+import fotoSites from "@/assets/fotos/sites-2.jpg";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const h = t.home;
+const v = h.v2;
+const { planos } = getPlans(lang);
+const lowest = lowestPlanPrice(lang);
+const priceVars = { preco: lowest ? money(lowest, lang) : "" };
+const comCaso = projetos.filter((p) => p.caso);
+const semCaso = projetos.filter((p) => !p.caso);
+
+type PillarKey = "cad" | "automation" | "sites";
+const pillarPhotos = { cad: fotoFabrica, automation: fotoLab, sites: fotoSites };
+const pillarHref = (key: PillarKey) => (key === "sites" ? path("sites", lang) : path(key, lang));
+
+// Números reais (vêm dos arquivos de dados). Itens sem valor são escondidos.
+const numbers = v.numbers.items
+  .map((it) => ({ n: fill(it.n, { preco: priceVars.preco, projetos: String(projetos.length) }), l: it.l }))
+  .filter((it) => it.n.trim() !== "");
+const marquee = [...projetos.map((p) => p.cliente), ...projetos.map((p) => p.cliente)];
+---
+
+<Base
+  lang={lang}
+  title={h.metaTitle}
+  description={fill(h.metaDescription, priceVars)}
+  waPage={h.waPage}
+  alternates={{ pt: "/", en: "/en" }}
+  hideCtaBand
+>
+  <!-- 1. TOPO: intro animada com os serviços (termina no título e nas chamadas) -->
+  <GlobeIntro lang={lang} />
+
+  <!-- 2. FAIXA AZUL COM CLIENTES -->
+  <section class="overflow-hidden bg-brand py-5 text-on-brand" aria-label={h.portfolio.eyebrow}>
+    <ul class="marquee flex w-max gap-10 whitespace-nowrap">
+      {marquee.map((name, i) => (
+        <li class="flex items-center gap-10 font-display text-3xl sm:text-4xl" aria-hidden={i >= projetos.length ? "true" : undefined}>
+          {name}<span aria-hidden="true">✦</span>
+        </li>
+      ))}
+    </ul>
+  </section>
+
+  <!-- 3. O QUE FAZEMOS: linhas grandes -->
+  <section class="container-x pt-24" aria-labelledby="oque-titulo">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="eyebrow">{v.what.eyebrow}</p>
+        <h2 id="oque-titulo" class="mt-3 text-5xl text-ink sm:text-7xl">{v.what.title}</h2>
+      </div>
+    </div>
+    <ol class="mt-12 border-t border-line">
+      {h.pillars.items.map((p, i) => (
+        <li class="border-b border-line" data-reveal>
+          <a href={pillarHref(p.key as PillarKey)} class="group grid items-center gap-6 py-8 transition-colors sm:grid-cols-[5rem_1fr_16rem_3rem] sm:py-10">
+            <span class="font-display text-5xl text-outline transition group-hover:[-webkit-text-stroke-color:var(--color-brand)]">0{i + 1}</span>
+            <span>
+              <span class="block font-display text-4xl text-ink transition group-hover:text-brand sm:text-6xl">{p.title}</span>
+              <span class="mt-3 block max-w-2xl text-muted">{p.text}</span>
+            </span>
+            <Image src={pillarPhotos[p.key as PillarKey]} alt="" widths={[320, 640]} sizes="256px" class="hidden aspect-[16/10] w-full rounded-md object-cover opacity-70 grayscale transition duration-500 group-hover:opacity-100 group-hover:grayscale-0 sm:block" />
+            <span class="hidden size-12 items-center justify-center rounded-full border border-line text-ink transition group-hover:border-brand group-hover:bg-brand group-hover:text-on-brand sm:inline-flex">
+              <Icon name="arrowRight" size={20} />
+            </span>
+          </a>
+        </li>
+      ))}
+    </ol>
+    <p class="mt-6 text-sm text-muted">
+      {v.what.note}:
+      {otherServices.filter((k) => k !== "cad").map((k, i, arr) => (
+        <>
+          <a href={path(k, lang)} class="ml-1 font-semibold text-ink hover:text-brand">{t.servicesList[k].name}</a>{i < arr.length - 1 ? " ·" : ""}
+        </>
+      ))}
+    </p>
+  </section>
+
+  <!-- 4. NÚMEROS -->
+  <section class="mt-24 border-y border-line bg-surface" aria-labelledby="numeros-titulo">
+    <div class="container-x py-16">
+      <h2 id="numeros-titulo" class="sr-only">{v.numbers.title}</h2>
+      <ul class="grid grid-cols-2 gap-x-6 gap-y-10 lg:grid-cols-[1fr_1.5fr_1fr_1fr] lg:gap-x-10">
+        {numbers.map((it, i) => (
+          <li class:list={[it.n.length > 3 && "col-span-2 lg:col-span-1"]} data-reveal style={`--reveal-delay:${i * 80}ms`}>
+            <p class="whitespace-nowrap font-display text-6xl text-brand sm:text-7xl xl:text-8xl">{it.n}</p>
+            <p class="mt-2 max-w-[14rem] text-xs font-semibold uppercase tracking-wide text-ink/80 sm:text-sm">{it.l}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 5. CASES -->
+  <section class="container-x pt-24" id="portfolio" aria-labelledby="cases-titulo">
+    <p class="eyebrow">{v.cases.eyebrow}</p>
+    <h2 id="cases-titulo" class="mt-3 text-5xl text-ink sm:text-7xl">{v.cases.title}</h2>
+
+    <div class="mt-14 grid gap-20">
+      {comCaso.map((p, i) => {
+        const caso = lang === "en" ? p.caso!.en : p.caso!;
+        const setor = lang === "en" ? p.setorEn : p.setor;
+        return (
+          <article class:list={["grid items-center gap-8 lg:gap-14", p.imagem ? "lg:grid-cols-2" : "border-t border-line pt-12", p.imagem && i % 2 === 1 && "lg:[&>*:first-child]:order-2"]} data-reveal>
+            {p.imagem && (
+            <a href={projectPath(p.slug, lang)} class="group block overflow-hidden rounded-md border border-line bg-surface">
+              <Image src={p.imagem} alt={lang === "en" ? `Screenshot of the ${p.cliente} project` : `Tela do projeto ${p.cliente}`} widths={[640, 960, 1280]} sizes="(min-width: 1024px) 560px, 100vw" class="aspect-[16/9] w-full object-cover object-top transition duration-700 group-hover:scale-[1.03]" />
+            </a>
+            )}
+            <div class:list={[!p.imagem && "max-w-3xl"]}>
+              <p class="text-sm font-semibold uppercase tracking-wide text-muted">0{i + 1} · {setor}</p>
+              <h3 class="mt-2 font-display text-5xl uppercase text-ink sm:text-6xl">{p.cliente}</h3>
+              <dl class="mt-6 grid gap-5">
+                <div><dt class="eyebrow">{v.cases.challenge}</dt><dd class="mt-1.5 text-muted">{caso.desafio}</dd></div>
+                <div><dt class="eyebrow">{v.cases.delivery}</dt><dd class="mt-1.5 text-ink/90">{caso.entrega}</dd></div>
+              </dl>
+              <div class="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+                <a href={projectPath(p.slug, lang)} class="btn btn-ghost">{t.common.seeCase}<Icon name="arrowRight" size={16} /></a>
+                {p.url && (
+                  <a href={p.url} target="_blank" rel="noopener" class="inline-flex items-center gap-1.5 text-sm font-semibold text-muted hover:text-ink">
+                    {p.url.replace(/^https?:\/\//, "")}<Icon name="external" size={14} /><span class="sr-only">{t.a11y.external}</span>
+                  </a>
+                )}
+              </div>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+
+    {semCaso.length > 0 && (
+      <div class="mt-20 flex flex-col gap-4 border-t border-line pt-8 sm:flex-row sm:items-center">
+        <p class="text-sm font-semibold uppercase tracking-wide text-muted">{h.portfolio.moreTitle}</p>
+        <ul class="flex flex-wrap gap-3">
+          {semCaso.map((p) => (
+            <li>
+              <a href={p.url} target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-md border border-line px-4 py-2 text-sm font-semibold text-ink hover:border-brand">
+                {p.cliente}<Icon name="external" size={14} class="text-muted" /><span class="sr-only">{t.a11y.external}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </section>
+
+  <!-- DEPOIMENTOS (só aparece quando houver depoimentos reais) -->
+  {(depoimentos.length > 0 || showTodos) && (
+    <section class="container-x pt-24" aria-labelledby="depo-titulo">
+      <p class="eyebrow">{h.testimonials.eyebrow}</p>
+      <h2 id="depo-titulo" class="mt-3 text-5xl text-ink sm:text-6xl">{h.testimonials.title}</h2>
+      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {depoimentos.length > 0 ? depoimentos.map((d) => (
+          <figure class="card flex flex-col p-8" data-reveal>
+            <span class="block h-9 font-display text-7xl leading-none text-brand" aria-hidden="true">“</span>
+            <blockquote class="mt-3 text-lg leading-relaxed text-ink/90">{lang === "en" && d.textoEn ? d.textoEn : d.texto}</blockquote>
+            <figcaption class="mt-auto flex items-center gap-3 border-t border-line pt-5">
+              <span class="inline-flex size-11 shrink-0 items-center justify-center rounded-md bg-brand font-display text-xl text-on-brand" aria-hidden="true">{d.nome.split(" ").map((w) => w[0]).filter((c) => c === c.toUpperCase()).slice(0, 2).join("")}</span>
+              <span class="text-sm">
+                <span class="block font-bold text-ink">{d.nome}</span>
+                <span class="block text-muted">{lang === "en" && d.cargoEn ? d.cargoEn : d.cargo} · {d.empresa}</span>
+              </span>
+            </figcaption>
+          </figure>
+        )) : (
+          <figure class="card todo p-7">
+            <span class="todo-tag">TODO: depoimentos</span>
+            <blockquote class="mt-4 text-muted">Adicione depoimentos reais em src/data/depoimentos.ts. Esta caixa só aparece no modo de desenvolvimento.</blockquote>
+          </figure>
+        )}
+      </div>
+    </section>
+  )}
+
+  <!-- 6. PLANOS -->
+  <section class="container-x pt-24" id="planos" aria-labelledby="planos-titulo">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div>
+        <p class="eyebrow">{h.plans.eyebrow}</p>
+        <h2 id="planos-titulo" class="mt-3 text-5xl text-ink sm:text-7xl">{v.plansTitle}</h2>
+      </div>
+      <a href={path("plans", lang)} class="text-sm font-bold uppercase tracking-wide text-brand hover:text-ink">{h.plans.cta} →</a>
+    </div>
+    <div class="mt-12 grid gap-6 md:grid-cols-2">
+      {planos.map((p) => <PlanCard plano={p} lang={lang} />)}
+    </div>
+  </section>
+
+  <!-- 7. PRÓXIMO PASSO -->
+  <section class="mt-24 bg-brand text-on-brand" id="contato" aria-labelledby="contato-titulo">
+    <div class="container-x grid gap-12 py-20 lg:grid-cols-[1fr_1.15fr]">
+      <div>
+        <h2 id="contato-titulo" class="text-5xl sm:text-7xl">{v.next.title}</h2>
+        <ol class="mt-10 grid gap-6">
+          {v.next.steps.map((s, i) => (
+            <li class="flex gap-5">
+              <span class="font-display text-5xl leading-none text-on-brand">{i + 1}</span>
+              <span>
+                <span class="block text-lg font-bold">{s.t}</span>
+                <span class="mt-1 block text-on-brand">{s.d}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <div class="text-ink"><LeadForm lang={lang} page={h.waPage} /></div>
+    </div>
+  </section>
+
+  <CheckoutDialog lang={lang} page={h.waPage} />
+</Base>

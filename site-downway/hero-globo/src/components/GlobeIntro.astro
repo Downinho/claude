@@ -1,0 +1,521 @@
+---
+// Abertura da home em versão "global": um globo em pontos que fica fixo na tela e conta a expansão
+// da Downway conforme a pessoa rola: São Paulo → Estados Unidos → Espanha → Nova Zelândia e Austrália → Rússia.
+// Mesma linguagem do ServicesIntro (HUD de câmera, pontos de etapa, painéis). Sem JS ou com
+// "menos movimento" no sistema, vira um topo estático com o título e a lista de rotas.
+import Icon from "@/components/Icon.astro";
+import { useT, fill } from "@/i18n";
+import { path, type Lang } from "@/i18n/routes";
+import { waLink } from "@/lib/whatsapp";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useT(lang);
+const v = t.home.v2;
+const wa = fill(t.wa.generic, { page: t.home.waPage });
+
+const copy = {
+  pt: {
+    eyebrow: "De São Paulo para o mundo",
+    scroll: "Role para seguir a rota",
+    cam: "DOWNWAY GLOBAL",
+    route: "Rota",
+    steps: [
+      { kicker: "Ponto de partida", place: "São Paulo · BR", title: "Começamos em São Paulo", text: "Engenharia, CAD e automação nascidas no chão de fábrica brasileiro.", meta: "23.55°S 46.63°W · UTC−3" },
+      { kicker: "Rota 01 / 04", place: "Estados Unidos", title: "Hoje entregamos nos Estados Unidos", text: "Modelos, desenhos e documentação enviados de forma remota, dentro do horário comercial americano.", meta: "UTC−5 · 1–2 h de diferença" },
+      { kicker: "Rota 02 / 04", place: "Espanha", title: "Na Europa, Espanha", text: "O arquivo sai do Brasil à noite e chega pela manhã na mesa do cliente.", meta: "UTC+1 · 4–5 h à frente" },
+      { kicker: "Rota 03 / 04", place: "Nova Zelândia · Austrália", title: "Nova Zelândia e Austrália", text: "Do outro lado do mundo, o trabalho continua enquanto o Brasil dorme.", meta: "UTC+10 a +13 · 13–16 h à frente" },
+      { kicker: "Rota 04 / 04", place: "Rússia", title: "E até a Rússia", text: "Desenho técnico, tolerância e lista de materiais falam a mesma língua em qualquer país.", meta: "UTC+3 · 6 h à frente" },
+    ],
+    stats: [["06", "países"], ["04", "continentes"], ["05", "rotas a partir de SP"]],
+  },
+  en: {
+    eyebrow: "From São Paulo to the world",
+    scroll: "Scroll to follow the route",
+    cam: "DOWNWAY GLOBAL",
+    route: "Route",
+    steps: [
+      { kicker: "Starting point", place: "São Paulo · BR", title: "We started in São Paulo", text: "Engineering, CAD and automation born on the Brazilian shop floor.", meta: "23.55°S 46.63°W · UTC−3" },
+      { kicker: "Route 01 / 04", place: "United States", title: "Now delivering in the United States", text: "Models, drawings and documentation delivered remotely, inside the American workday.", meta: "UTC−5 · 1–2 h apart" },
+      { kicker: "Route 02 / 04", place: "Spain", title: "In Europe, Spain", text: "Files leave Brazil in the evening and are on the client's desk in the morning.", meta: "UTC+1 · 4–5 h ahead" },
+      { kicker: "Route 03 / 04", place: "New Zealand · Australia", title: "New Zealand and Australia", text: "On the other side of the world, the work keeps moving while Brazil sleeps.", meta: "UTC+10 to +13 · 13–16 h ahead" },
+      { kicker: "Route 04 / 04", place: "Russia", title: "And as far as Russia", text: "Drawings, tolerances and bills of materials read the same in every country.", meta: "UTC+3 · 6 h ahead" },
+    ],
+    stats: [["06", "countries"], ["04", "continents"], ["05", "routes from SP"]],
+  },
+}[lang];
+---
+
+<section class="gintro" data-gintro aria-label={copy.eyebrow}>
+  <div class="g-stage">
+    <canvas class="g-canvas" aria-hidden="true"></canvas>
+    <div class="g-shade" aria-hidden="true"></div>
+    <div class="g-tags" aria-hidden="true"></div>
+
+    <!-- HUD de câmera -->
+    <div class="g-hud" aria-hidden="true">
+      <span class="corner tl"></span><span class="corner tr"></span><span class="corner bl"></span><span class="corner br"></span>
+      <div class="hud-text">
+        <p class="hud-rec"><span class="rec-dot"></span> REC · {copy.cam}</p>
+        <p data-g-tele>LAT −23.55 · LON −46.63 · UTC−3</p>
+        <p data-g-step>DOWNWAY</p>
+      </div>
+    </div>
+
+    <nav class="g-dots" aria-label={copy.eyebrow}>
+      {copy.steps.map((s, i) => (
+        <button type="button" data-dot={i + 1} aria-label={s.place}><span></span></button>
+      ))}
+    </nav>
+
+    <!-- 0. Abertura -->
+    <div class="g-panel g-open is-active" data-phase="0">
+      <p class="eyebrow">{copy.eyebrow}</p>
+      <p class="g-logo font-display" aria-hidden="true">DOWN<span class="text-brand">WAY</span></p>
+      <p class="g-hint">
+        {copy.scroll}
+        <svg width="14" height="22" viewBox="0 0 14 22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="1" y="1" width="12" height="20" rx="6" /><path d="M7 5v4" class="hint-wheel" /></svg>
+      </p>
+    </div>
+
+    <!-- 1–5. Uma rota por etapa -->
+    <ol class="g-steps">
+      {copy.steps.map((s, i) => (
+        <li class="g-panel g-step" data-phase={i + 1} data-name={s.place}>
+          <p class="g-kicker"><span aria-hidden="true"></span>{s.kicker}</p>
+          <h2 class="g-title">{s.title}</h2>
+          <p class="g-text">{s.text}</p>
+          <p class="g-meta">{s.meta}</p>
+        </li>
+      ))}
+    </ol>
+
+    <!-- 6. Fechamento: o título e as chamadas da home, com o globo girando atrás -->
+    <div class="g-panel g-close" data-phase="6">
+      <div class="container-x w-full pb-14 pt-24 sm:pb-20">
+        <p class="eyebrow">{v.hero.eyebrow}</p>
+        <h1 class="mt-4 text-[3.6rem] text-ink sm:text-[6rem] lg:text-[8.5rem]">
+          <span class="block">{v.hero.line1}</span>
+          <span class="block text-brand">{v.hero.line2}</span>
+        </h1>
+        <ul class="g-stats mt-6">
+          {copy.stats.map(([n, l]) => (
+            <li><span class="font-display">{n}</span>{l}</li>
+          ))}
+        </ul>
+        <div class="mt-8 grid gap-8 border-t border-white/15 pt-8 lg:grid-cols-[1.2fr_1fr] lg:items-center">
+          <p class="max-w-xl text-lg text-ink/85">{v.hero.lead}</p>
+          <div class="flex flex-col gap-3 sm:flex-row lg:justify-end">
+            <a href={waLink(wa)} target="_blank" rel="noopener" data-wa-origin="topo" class="btn btn-primary !px-8">{v.hero.cta}<Icon name="arrowRight" size={18} /></a>
+            <a href={path("plans", lang)} class="btn btn-ghost !px-8">{v.hero.plans}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ---------- Versão estática (sem JS ou com "menos movimento") ---------- */
+  .g-stage { display: flex; flex-direction: column; }
+  .g-canvas, .g-shade, .g-tags, .g-hud, .g-dots, .g-open { display: none; }
+  .g-close {
+    order: -1;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: calc(100svh - 4rem);
+    background: radial-gradient(60% 60% at 70% 40%, color-mix(in oklab, var(--color-brand) 22%, transparent), transparent 70%), var(--color-bg);
+  }
+  .g-steps {
+    display: grid;
+    gap: 1rem;
+    width: 100%;
+    max-width: 72rem;
+    margin: 3rem auto;
+    padding-inline: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  }
+  .g-step { background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 0.5rem; padding: 1.25rem; }
+  .g-kicker {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--color-brand-soft);
+  }
+  .g-kicker span { width: 1.75rem; height: 1px; background: currentColor; }
+  .g-title { margin-top: 0.5rem; font-size: 2.4rem; color: var(--color-ink); }
+  .g-text { margin-top: 0.6rem; color: var(--color-muted); }
+  .g-meta { margin-top: 0.9rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-brand-soft); }
+  .g-stats { display: flex; flex-wrap: wrap; gap: 0.5rem 2rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-muted); }
+  .g-stats li { display: flex; align-items: baseline; gap: 0.6rem; }
+  .g-stats span { font-size: 2.6rem; color: var(--color-ink); letter-spacing: 0.02em; }
+
+  /* ---------- Versão animada ---------- */
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.js) .gintro {
+      --phase: 100svh;
+      position: relative;
+      height: calc(6 * var(--phase) + 100svh - 4rem);
+    }
+    :global(.js) .g-stage {
+      position: sticky;
+      top: 4rem;
+      display: block;
+      height: calc(100svh - 4rem);
+      overflow: hidden;
+      background:
+        radial-gradient(55% 60% at 60% 45%, color-mix(in oklab, var(--color-brand) 13%, transparent), transparent 70%),
+        var(--color-bg);
+    }
+    :global(.js) .g-canvas { display: block; position: absolute; inset: 0; width: 100%; height: 100%; }
+    :global(.js) .g-shade {
+      display: block; position: absolute; inset: 0; pointer-events: none;
+      background:
+        linear-gradient(to top, var(--color-bg) 0%, transparent 32%),
+        radial-gradient(120% 90% at 50% 50%, transparent 55%, var(--color-bg) 100%);
+    }
+    :global(.js) .g-tags { display: block; position: absolute; inset: 0; pointer-events: none; }
+    :global(.g-tag) {
+      position: absolute; left: 0; top: 0;
+      font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.14em; text-transform: uppercase; white-space: nowrap;
+      color: var(--color-ink); padding: 0.2rem 0.45rem; border-radius: 0.25rem;
+      border: 1px solid color-mix(in oklab, var(--color-brand-soft) 45%, transparent);
+      background: color-mix(in oklab, var(--color-bg) 82%, transparent);
+      opacity: 0; transition: opacity 0.4s;
+    }
+    :global(.g-tag.home) { background: var(--color-brand); border-color: var(--color-brand); color: var(--color-on-brand); font-weight: 500; }
+
+    /* HUD */
+    :global(.js) .g-hud {
+      display: block; position: absolute; inset: 1.25rem; pointer-events: none;
+      font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.16em; text-transform: uppercase;
+      color: color-mix(in oklab, var(--color-ink) 55%, transparent);
+    }
+    .corner { position: absolute; width: 1rem; height: 1rem; border-color: color-mix(in oklab, var(--color-ink) 45%, transparent); }
+    .corner.tl { top: 0; left: 0; border-top: 1px solid; border-left: 1px solid; }
+    .corner.tr { top: 0; right: 0; border-top: 1px solid; border-right: 1px solid; }
+    .corner.bl { bottom: 0; left: 0; border-bottom: 1px solid; border-left: 1px solid; }
+    .corner.br { bottom: 0; right: 0; border-bottom: 1px solid; border-right: 1px solid; }
+    .hud-text { position: absolute; top: 1rem; right: 1.5rem; text-align: right; line-height: 1.9; }
+    .hud-rec { color: var(--color-brand-soft); }
+    .rec-dot { display: inline-block; width: 0.45rem; height: 0.45rem; border-radius: 50%; background: var(--color-brand); box-shadow: 0 0 8px var(--color-brand); animation: rec 1.4s steps(2, jump-none) infinite; }
+    @keyframes rec { 50% { opacity: 0.15; } }
+
+    /* Pontos de progresso */
+    :global(.js) .g-dots { display: flex; flex-direction: column; gap: 0.35rem; position: absolute; right: 1.6rem; top: 50%; transform: translateY(-50%); z-index: 2; transition: opacity 0.4s; }
+    .gintro[data-phase="6"] .g-dots { opacity: 0; pointer-events: none; }
+    .g-dots button { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; cursor: pointer; }
+    .g-dots span { width: 0.4rem; height: 0.4rem; border-radius: 50%; background: color-mix(in oklab, var(--color-ink) 35%, transparent); transition: transform 0.3s, background-color 0.3s; }
+    .g-dots button[aria-current="step"] span { background: var(--color-brand); box-shadow: 0 0 10px var(--color-brand); transform: scale(1.5); }
+
+    /* Painéis: só o da etapa atual aparece */
+    :global(.js) .g-steps { display: contents; }
+    :global(.js) .g-panel {
+      position: absolute; opacity: 0; visibility: hidden; transform: translateY(18px);
+      transition: opacity 0.5s ease, transform 0.5s ease, visibility 0s linear 0.5s;
+    }
+    :global(.js) .g-panel.is-active { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+
+    :global(.js) .g-open { display: flex; inset: 0; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding-inline: 1rem; }
+    .g-logo { margin-top: 1rem; font-size: clamp(5rem, 17vw, 15rem); color: var(--color-ink); letter-spacing: 0.02em; text-shadow: 0 0 40px color-mix(in oklab, var(--color-brand) 45%, transparent); }
+    .g-hint { display: inline-flex; align-items: center; gap: 0.75rem; margin-top: 1.5rem; font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--color-muted); }
+    .hint-wheel { animation: wheel 1.6s ease-in-out infinite; }
+    @keyframes wheel { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(6px); opacity: 0; } }
+
+    :global(.js) .g-step { left: max(1.5rem, calc((100% - 72rem) / 2 + 1.5rem)); bottom: 9%; width: min(30rem, calc(100% - 3rem)); padding: 0; background: none; border: 0; }
+    :global(.js) .g-title { font-size: clamp(3rem, 6vw, 5.5rem); text-shadow: 0 2px 24px var(--color-bg); }
+    :global(.js) .g-text { max-width: 26rem; color: color-mix(in oklab, var(--color-ink) 82%, transparent); }
+
+    :global(.js) .g-close { inset: 0; min-height: 0; background: linear-gradient(to top, var(--color-bg) 18%, color-mix(in oklab, var(--color-bg) 55%, transparent) 55%, transparent); }
+
+    @media (max-width: 639px) {
+      :global(.js) .gintro { --phase: 80svh; }
+      :global(.js) .g-step { left: 1rem; bottom: 6%; width: calc(100% - 4rem); }
+      :global(.js) .g-title { font-size: 2.9rem; }
+      .hud-text { top: 0.75rem; right: 0.75rem; font-size: 0.6rem; }
+      :global(.js) .g-dots { right: 0.5rem; gap: 0; }
+    }
+  }
+</style>
+
+<script>
+  import pontos from "@/data/globo-pontos.json";
+
+  type V = [number, number, number];
+  const BRAND = "#2282f0";
+  const SOFT = "#5aa2f5";
+  const WHITE = "#eef2f7";
+  const LAND = "#3a5f8f";
+  const DEG = Math.PI / 180;
+  const TAU = Math.PI * 2;
+  const clamp = (x: number, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const ease = (x: number) => { const c = clamp(x); return c * c * (3 - 2 * c); };
+  const easeOut = (x: number) => 1 - Math.pow(1 - clamp(x), 3);
+  const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+  const unit = (lon: number, lat: number): V => { const l = lon * DEG, p = lat * DEG; return [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)]; };
+
+  // Destinos: código do país nos dados (2 US, 3 ES, 4 NZ, 5 AU, 6 RU), etapa em que o arco é desenhado
+  const ORIGIN = unit(-46.63, -23.55);
+  const DEST = [
+    { code: 2, label: { pt: "Estados Unidos", en: "United States" }, lon: -87.63, lat: 41.88, phase: 2, delay: 0, side: -1 },
+    { code: 3, label: { pt: "Espanha", en: "Spain" }, lon: -3.7, lat: 40.42, phase: 3, delay: 0, side: 1 },
+    { code: 4, label: { pt: "Nova Zelândia", en: "New Zealand" }, lon: 174.76, lat: -36.85, phase: 4, delay: 0.2, side: 1 },
+    { code: 5, label: { pt: "Austrália", en: "Australia" }, lon: 151.21, lat: -33.87, phase: 4, delay: 0, side: -1 },
+    { code: 6, label: { pt: "Rússia", en: "Russia" }, lon: 37.62, lat: 55.76, phase: 5, delay: 0, side: 1 },
+  ];
+  // Câmera por etapa: abertura, São Paulo, EUA, Espanha, Oceania (pelo polo sul), Rússia, fechamento
+  const KF = [
+    { lon: -50, lat: -10, zoom: 0.78 },
+    { lon: -47, lat: -21, zoom: 2.0 },
+    { lon: -70, lat: 10, zoom: 0.95 },
+    { lon: -27, lat: 14, zoom: 0.95 },
+    { lon: -140, lat: -50, zoom: 0.92 },
+    { lon: -5, lat: 18, zoom: 0.92 },
+    { lon: 60, lat: 14, zoom: 1.05 },
+  ];
+  const TZ = ["UTC−3", "UTC−3", "UTC−5", "UTC+1", "UTC+12", "UTC+3", ""];
+
+  function init() {
+    const section = document.querySelector<HTMLElement>("[data-gintro]");
+    if (!section || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const stage = section.querySelector<HTMLElement>(".g-stage")!;
+    const canvas = section.querySelector<HTMLCanvasElement>(".g-canvas")!;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const tagsEl = section.querySelector<HTMLElement>(".g-tags")!;
+    const panels = [...section.querySelectorAll<HTMLElement>(".g-panel")];
+    const dots = [...section.querySelectorAll<HTMLButtonElement>("[data-dot]")];
+    const tele = section.querySelector<HTMLElement>("[data-g-tele]")!;
+    const stepTxt = section.querySelector<HTMLElement>("[data-g-step]")!;
+    const lang = document.documentElement.lang.startsWith("en") ? "en" : "pt";
+    const LAST = 6;
+
+    // Pontos de terra (lon, lat, país, distância até a cidade de chegada em décimos de grau)
+    const raw = pontos.pts as number[];
+    const n = raw.length / 4;
+    const P = new Float32Array(n * 3), CODE = new Uint8Array(n), DIST = new Float32Array(n), maxD = [0, 0, 0, 0, 0, 0, 0];
+    for (let i = 0; i < n; i++) {
+      const v = unit(raw[i * 4] / 10, raw[i * 4 + 1] / 10);
+      P[i * 3] = v[0]; P[i * 3 + 1] = v[1]; P[i * 3 + 2] = v[2];
+      CODE[i] = raw[i * 4 + 2]; DIST[i] = raw[i * 4 + 3] / 10;
+      if (DIST[i] > maxD[CODE[i]]) maxD[CODE[i]] = DIST[i];
+    }
+    const brGeom = pontos.br as { type: string; coordinates: any };
+    const brRings: V[][] = (brGeom.type === "Polygon" ? [brGeom.coordinates] : brGeom.coordinates).map((p: number[][][]) => p[0].map(([x, y]) => unit(x, y)));
+    const grat: V[][] = [];
+    for (let lon = -180; lon < 180; lon += 20) { const r: V[] = []; for (let lat = -80; lat <= 80; lat += 4) r.push(unit(lon, lat)); grat.push(r); }
+    for (let lat = -60; lat <= 60; lat += 20) { const r: V[] = []; for (let lon = -180; lon <= 180; lon += 4) r.push(unit(lon, lat)); grat.push(r); }
+
+    const slerp = (a: V, b: V, t: number, w: number): V => { const s = Math.sin(w), k1 = Math.sin((1 - t) * w) / s, k2 = Math.sin(t * w) / s; return [a[0] * k1 + b[0] * k2, a[1] * k1 + b[1] * k2, a[2] * k1 + b[2] * k2]; };
+    const mkTag = (txt: string, cls = "") => { const e = document.createElement("span"); e.className = "g-tag " + cls; e.textContent = txt; tagsEl.appendChild(e); return e; };
+    const routes = DEST.map((d) => {
+      const v = unit(d.lon, d.lat);
+      const w = Math.acos(clamp(ORIGIN[0] * v[0] + ORIGIN[1] * v[1] + ORIGIN[2] * v[2], -1, 1));
+      const h = Math.min(0.32, 0.08 + w * 0.15);
+      const samples: V[] = [];
+      for (let i = 0; i <= 120; i++) { const t = i / 120, p = slerp(ORIGIN, v, t, w), k = 1 + h * Math.sin(Math.PI * t); samples.push([p[0] * k, p[1] * k, p[2] * k]); }
+      return { ...d, v, samples, el: mkTag(d.label[lang]) };
+    });
+    const homeTag = mkTag("São Paulo · BR", "home");
+
+    // Câmera ortográfica
+    let W = 0, H = 0, dpr = 1, R = 0, cx = 0, cy = 0, mobile = false;
+    let E: V = [0, 0, 0], N: V = [0, 0, 0], C: V = [0, 0, 0];
+    const setCam = (lon: number, lat: number) => {
+      const l = lon * DEG, p = lat * DEG;
+      C = [Math.cos(p) * Math.cos(l), Math.cos(p) * Math.sin(l), Math.sin(p)];
+      E = [-Math.sin(l), Math.cos(l), 0];
+      N = [-Math.sin(p) * Math.cos(l), -Math.sin(p) * Math.sin(l), Math.cos(p)];
+    };
+    const proj = (v: V): V => [cx + R * (v[0] * E[0] + v[1] * E[1] + v[2] * E[2]), cy - R * (v[0] * N[0] + v[1] * N[1] + v[2] * N[2]), v[0] * C[0] + v[1] * C[1] + v[2] * C[2]];
+    // ponto elevado: visível na frente, ou um pouco atrás quando já passou da borda do globo
+    const visible = (s: V) => s[2] > 0 || (s[2] > -0.22 && Math.hypot(s[0] - cx, s[1] - cy) > R);
+
+    const resize = () => {
+      dpr = Math.min(devicePixelRatio || 1, 2);
+      const w = canvas.clientWidth, h = canvas.clientHeight;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      mobile = w < 640;
+      W = canvas.width; H = canvas.height;
+    };
+    new ResizeObserver(resize).observe(canvas);
+    resize();
+
+    const stickyTop = () => parseFloat(getComputedStyle(stage).top) || 64;
+    const progress = () => {
+      const r = section.getBoundingClientRect();
+      const scrollable = r.height - stage.offsetHeight;
+      return scrollable > 0 ? clamp((stickyTop() - r.top) / scrollable) * LAST : 0;
+    };
+
+    let phase = -1;
+    const setPhase = (p: number) => {
+      if (p === phase) return;
+      phase = p;
+      section.dataset.phase = String(p);
+      panels.forEach((el) => el.classList.toggle("is-active", Number(el.dataset.phase) === p));
+      dots.forEach((d) => (Number(d.dataset.dot) === p ? d.setAttribute("aria-current", "step") : d.removeAttribute("aria-current")));
+      const panel = panels.find((el) => Number(el.dataset.phase) === p);
+      stepTxt.textContent = p >= 1 && p <= 5 ? (panel?.dataset.name ?? "") : "DOWNWAY";
+    };
+    dots.forEach((d) =>
+      d.addEventListener("click", () => {
+        const i = Number(d.dataset.dot);
+        const scrollable = section.offsetHeight - stage.offsetHeight;
+        const top = section.getBoundingClientRect().top + scrollY - stickyTop();
+        scrollTo({ top: top + (i / LAST) * scrollable + 2, behavior: "smooth" });
+      }),
+    );
+
+    const place = (el: HTMLElement, s: V | null, show: boolean, side: number, dy: number) => {
+      if (!show || !s) { el.style.opacity = "0"; return; }
+      el.style.opacity = "1";
+      const w = el.offsetWidth, sw = tagsEl.clientWidth;
+      let x = side < 0 ? s[0] / dpr - 12 - w : s[0] / dpr + 12;
+      x = Math.max(4, Math.min(sw - w - 4, x));
+      el.style.transform = `translate(${Math.round(x)}px, ${Math.round(s[1] / dpr + dy)}px)`;
+    };
+    // Linha com brilho por baixo, como as cenas do ServicesIntro
+    const glow = (width: number, alpha: number, color: string) => {
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha * 0.16; ctx.lineWidth = width * 4 * dpr; ctx.stroke();
+      ctx.globalAlpha = alpha; ctx.lineWidth = width * dpr; ctx.stroke();
+    };
+
+    const t0 = performance.now();
+    let running = false;
+
+    const frame = (now: number) => {
+      if (!running) return;
+      const t = now - t0;
+      const g = progress();
+      // Etiquetas somem na abertura (logo) e no fechamento (h1) para não competir com o texto
+      tagsEl.style.opacity = String(Math.min(clamp((g - 0.45) / 0.3), clamp((5.5 - g) / 0.3)));
+      setPhase(Math.round(g));
+
+      // câmera: interpola as etapas; no fechamento o globo segue girando
+      const i0 = Math.min(Math.floor(g), KF.length - 2), f = ease(g - i0), a = KF[i0], b = KF[i0 + 1];
+      let lon = lerp(a.lon, b.lon, f), lat = lerp(a.lat, b.lat, f);
+      const zoom = lerp(a.zoom, b.zoom, f);
+      lon += Math.sin(t / 4200) * 1.5 + Math.max(0, g - 5.5) * (t / 1000) * 0;
+      if (g > 5.6) lon += ((t / 1000) * 6) % 360 * ease((g - 5.6) / 0.4);
+      setCam(lon, lat);
+      const intro = easeOut(t / 1100);
+      R = Math.min(W, H) * (mobile ? 0.44 : 0.4) * zoom * (0.9 + 0.1 * intro);
+      cx = mobile ? W * 0.5 : W * (W / dpr >= 1024 ? 0.62 : 0.58);
+      cy = mobile ? H * 0.36 : H * 0.46;
+
+      ctx.setTransform(1, 0, 0, 1, 0, 0);
+      ctx.clearRect(0, 0, W, H);
+      ctx.lineCap = "round";
+      ctx.globalAlpha = intro;
+
+      // atmosfera e corpo
+      let grd = ctx.createRadialGradient(cx, cy, R * 0.92, cx, cy, R * 1.22);
+      grd.addColorStop(0, "rgba(34,130,240,0.22)"); grd.addColorStop(1, "rgba(34,130,240,0)");
+      ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, R * 1.22, 0, TAU); ctx.fill();
+      grd = ctx.createRadialGradient(cx - R * 0.35, cy - R * 0.4, R * 0.1, cx, cy, R);
+      grd.addColorStop(0, "#111a28"); grd.addColorStop(1, "#08090b");
+      ctx.fillStyle = grd; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();
+      ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); glow(1, 0.5 * intro, BRAND);
+
+      // meridianos e paralelos em linha fina
+      ctx.beginPath();
+      for (const ring of grat) { let pen = false; for (const v of ring) { const s = proj(v); if (s[2] > 0) { pen ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); pen = true; } else pen = false; } }
+      ctx.strokeStyle = BRAND; ctx.globalAlpha = 0.13 * intro; ctx.lineWidth = 0.8 * dpr; ctx.stroke();
+
+      // frentes de preenchimento: Brasil pela abertura (tempo), destinos pela rolagem
+      const front = [0, 0, 0, 0, 0, 0, 0];
+      front[1] = ease((t - 500) / 2400) * (maxD[1] + 5);
+      const arcP = routes.map((d) => clamp((g - (d.phase - 0.8) - d.delay) / 0.55));
+      routes.forEach((d) => { front[d.code] = ease((g - (d.phase - 0.8) - d.delay - 0.5) / 0.4) * (maxD[d.code] + 4); });
+      const brSettled = clamp((t - 2900) / 900);
+
+      const ds = Math.max(1.1, R / 270);
+      ctx.fillStyle = LAND;
+      for (let i = 0; i < n; i++) {
+        const c = CODE[i]; if (c && DIST[i] <= front[c]) continue;
+        const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+        const d = x * C[0] + y * C[1] + z * C[2]; if (d <= 0.02) continue;
+        ctx.globalAlpha = intro * (0.14 + 0.6 * d);
+        ctx.fillRect(cx + R * (x * E[0] + y * E[1] + z * E[2]) - ds / 2, cy - R * (x * N[0] + y * N[1] + z * N[2]) - ds / 2, ds, ds);
+      }
+      for (let i = 0; i < n; i++) {
+        const c = CODE[i]; if (!c) continue;
+        const dist = DIST[i]; if (dist > front[c]) continue;
+        const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2];
+        const d = x * C[0] + y * C[1] + z * C[2]; if (d <= 0.02) continue;
+        const wave = Math.exp(-Math.pow((front[c] - dist) / 3, 2)) * (c === 1 ? 1 - brSettled : 1);
+        const sz = ds * (c === 4 ? 1.9 : 1.3) * (1 + wave * 1.2);
+        ctx.globalAlpha = intro * clamp(0.5 + 0.5 * d + wave);
+        ctx.fillStyle = wave > 0.3 ? WHITE : c === 1 ? BRAND : SOFT;
+        ctx.fillRect(cx + R * (x * E[0] + y * E[1] + z * E[2]) - sz / 2, cy - R * (x * N[0] + y * N[1] + z * N[2]) - sz / 2, sz, sz);
+      }
+
+      // contorno do Brasil
+      const ol = easeOut((t - 2400) / 900);
+      if (ol > 0) {
+        ctx.beginPath();
+        for (const ring of brRings) { let pen = false; for (const v of ring) { const s = proj(v); if (s[2] > 0) { pen ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); pen = true; } else pen = false; } }
+        glow(1.3, ol * 0.95 * intro, SOFT);
+      }
+
+      // origem
+      const so = proj(ORIGIN);
+      if (so[2] > 0) {
+        const pulse = (t % 1800) / 1800;
+        ctx.beginPath(); ctx.arc(so[0], so[1], (4 + pulse * 24) * dpr, 0, TAU);
+        ctx.strokeStyle = SOFT; ctx.globalAlpha = intro * (1 - pulse); ctx.lineWidth = 1.4 * dpr; ctx.stroke();
+        ctx.fillStyle = WHITE; ctx.globalAlpha = intro; ctx.shadowColor = BRAND; ctx.shadowBlur = 16 * dpr;
+        ctx.beginPath(); ctx.arc(so[0], so[1], 3.6 * dpr, 0, TAU); ctx.fill(); ctx.shadowBlur = 0;
+      }
+      place(homeTag, so, so[2] > 0.1 && t > 800, 1, 8);
+
+      // arcos
+      routes.forEach((d, k) => {
+        const ap = arcP[k];
+        if (ap <= 0) { place(d.el, null, false, d.side, 0); return; }
+        const m = Math.max(1, Math.floor(ap * 120));
+        ctx.beginPath();
+        let pen = false;
+        for (let i = 0; i <= m; i++) { const s = proj(d.samples[i]); if (visible(s)) { pen ? ctx.lineTo(s[0], s[1]) : ctx.moveTo(s[0], s[1]); pen = true; } else pen = false; }
+        glow(1.5, intro * (ap < 1 ? 1 : 0.6), ap < 1 ? WHITE : SOFT);
+        if (ap < 1) {
+          const s = proj(d.samples[m]);
+          if (visible(s)) { ctx.globalAlpha = intro; ctx.fillStyle = WHITE; ctx.shadowColor = BRAND; ctx.shadowBlur = 18 * dpr; ctx.beginPath(); ctx.arc(s[0], s[1], 3.2 * dpr, 0, TAU); ctx.fill(); ctx.shadowBlur = 0; }
+        } else {
+          for (let q = 0; q < 2; q++) {
+            const ff = (t / 3000 + k * 0.17 + q * 0.5) % 1;
+            const s = proj(d.samples[Math.floor(ff * 120)]); if (!visible(s)) continue;
+            ctx.globalAlpha = intro * Math.sin(Math.PI * ff); ctx.fillStyle = WHITE;
+            ctx.beginPath(); ctx.arc(s[0], s[1], 2 * dpr, 0, TAU); ctx.fill();
+          }
+        }
+        const dst = proj(d.v), arrived = ap >= 1;
+        if (arrived && dst[2] > 0.05) {
+          const ph = (t / 1700 + k * 0.2) % 1;
+          ctx.beginPath(); ctx.arc(dst[0], dst[1], (4 + ph * 22) * dpr, 0, TAU);
+          ctx.strokeStyle = SOFT; ctx.globalAlpha = intro * (1 - ph); ctx.lineWidth = 1.2 * dpr; ctx.stroke();
+          ctx.globalAlpha = intro; ctx.fillStyle = SOFT; ctx.beginPath(); ctx.arc(dst[0], dst[1], 3 * dpr, 0, TAU); ctx.fill();
+        }
+        place(d.el, dst, arrived && dst[2] > 0.15 && g < 5.8, d.side, d.side < 0 ? -28 : 6);
+      });
+      ctx.globalAlpha = 1;
+
+      const fmt = (x: number, pos: string, neg: string) => `${Math.abs(x).toFixed(2)}°${x >= 0 ? pos : neg}`;
+      const wrap = ((lon + 540) % 360) - 180;
+      tele.textContent = `${fmt(lat, "N", "S")} · ${fmt(wrap, "E", "W")} · ${TZ[Math.min(6, Math.round(g))] || (lang === "en" ? "6 COUNTRIES" : "6 PAÍSES")}`;
+      requestAnimationFrame(frame);
+    };
+
+    new IntersectionObserver(([e]) => {
+      if (e.isIntersecting && !running) { running = true; requestAnimationFrame(frame); }
+      else if (!e.isIntersecting) running = false;
+    }).observe(section);
+  }
+
+  init();
+</script>
